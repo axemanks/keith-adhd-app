@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "adhd-task-assistant-backend"
+version = "0.1.0"
+description = "Backend for the ADHD Task Assistant application"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+quart = "^0.18.4"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
