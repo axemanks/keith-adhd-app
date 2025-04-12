@@ -49,7 +49,7 @@ yarn-error.log
 
 # IDE
 .idea/
-.vscode/
+# .vscode/  # Purposely not ignored to share extensions and settings.
 *.swp
 *.swo
 

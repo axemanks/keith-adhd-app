@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Quart",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "hypercorn",
+            "cwd": "${workspaceFolder}/app/backend",
+            "args": [
+                "app:create_app()",
+                "--bind",
+                "127.0.0.1:8000",
+                "--log-level",
+                "debug"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        }
+    ]
+} 
