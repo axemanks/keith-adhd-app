@@ -2,24 +2,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Quart",
-            "type": "debugpy",
+            "name": "Python: Quart App",
+            "type": "python",
             "request": "launch",
-            "module": "hypercorn",
-            "cwd": "${workspaceFolder}/app/backend",
-            "args": [
-                "app:create_app()",
-                "--bind",
-                "127.0.0.1:8000",
-                "--log-level",
-                "debug"
-            ],
+            "program": "${workspaceFolder}/run_app.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
-            }
+            },
+            "python": "C:\\Users\\keith\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\adhd-productivity-assistant-uW87XxVm-py3.12\\Scripts\\python.exe"
         }
     ]
 } 

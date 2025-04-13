@@ -4,7 +4,12 @@
     "dictionaryDefinitions": [],
     "dictionaries": [],
     "words": [
-        "hypercorn"
+        "checkins",
+        "dotenv",
+        "hypercorn",
+        "jobstores",
+        "jsonify",
+        "pyfile"
     ],
     "ignoreWords": [],
     "import": []

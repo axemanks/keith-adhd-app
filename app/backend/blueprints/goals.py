@@ -1,20 +1,22 @@
-from quart import Blueprint, request, jsonify
 from datetime import datetime
+from typing import Any, Dict, List, Tuple
+
+from quart import Blueprint, Response, jsonify, request
 
 bp = Blueprint("goals", __name__, url_prefix="/api/goals")
 
 # In-memory storage for goals (will be replaced with database)
-goals = []
+goals: List[Dict[str, Any]] = []
 
 
 @bp.route("/", methods=["GET"])
-async def get_goals():
+async def get_goals() -> Tuple[Response, int]:
     """Get all goals."""
-    return jsonify(goals)
+    return jsonify({"goals": goals}), 200
 
 
 @bp.route("/", methods=["POST"])
-async def create_goal():
+async def create_goal() -> Tuple[Response, int]:
     """Create a new goal."""
     data = await request.get_json()
 
@@ -39,16 +41,16 @@ async def create_goal():
 
 
 @bp.route("/<int:goal_id>", methods=["GET"])
-async def get_goal(goal_id):
+async def get_goal(goal_id: int) -> Tuple[Response, int]:
     """Get a specific goal by ID."""
     goal = next((g for g in goals if g["id"] == goal_id), None)
     if goal is None:
         return jsonify({"error": "Goal not found"}), 404
-    return jsonify(goal)
+    return jsonify(goal), 200
 
 
 @bp.route("/<int:goal_id>", methods=["PUT"])
-async def update_goal(goal_id):
+async def update_goal(goal_id: int) -> Tuple[Response, int]:
     """Update a goal."""
     goal = next((g for g in goals if g["id"] == goal_id), None)
     if goal is None:
@@ -68,11 +70,11 @@ async def update_goal(goal_id):
         if data["status"] == "completed" and not goal["completed_at"]:
             goal["completed_at"] = datetime.now().isoformat()
 
-    return jsonify(goal)
+    return jsonify(goal), 200
 
 
 @bp.route("/<int:goal_id>/tasks", methods=["POST"])
-async def add_task_to_goal(goal_id):
+async def add_task_to_goal(goal_id: int) -> Tuple[Response, int]:
     """Add a task to a goal."""
     goal = next((g for g in goals if g["id"] == goal_id), None)
     if goal is None:
@@ -89,11 +91,11 @@ async def add_task_to_goal(goal_id):
         return jsonify({"error": "Task already added to this goal"}), 400
 
     goal["tasks"].append(task_id)
-    return jsonify(goal)
+    return jsonify(goal), 200
 
 
 @bp.route("/<int:goal_id>/complete", methods=["POST"])
-async def complete_goal(goal_id):
+async def complete_goal(goal_id: int) -> Tuple[Response, int]:
     """Mark a goal as completed."""
     goal = next((g for g in goals if g["id"] == goal_id), None)
     if goal is None:
@@ -102,4 +104,4 @@ async def complete_goal(goal_id):
     goal["status"] = "completed"
     goal["completed_at"] = datetime.now().isoformat()
 
-    return jsonify(goal)
+    return jsonify(goal), 200
