@@ -1,5 +1,6 @@
 # ADHD Productivity Assistant API Documentation
 
+
 ## Overview
 
 The ADHD Productivity Assistant API provides endpoints for task management, goal tracking, and AI-powered assistance. This documentation covers all available endpoints, their request/response formats, and usage examples.

@@ -1,20 +1,24 @@
-from quart import Blueprint, request, jsonify
-from datetime import datetime
+from typing import Dict, List, Optional, Union, Any
+from quart import Blueprint, Response, request, jsonify
+from datetime import datetime, timedelta
 
 bp = Blueprint("tasks", __name__, url_prefix="/api/tasks")
 
+# Type definition for a task
+TaskType = Dict[str, Union[int, str, Optional[str]]]
+
 # In-memory storage for tasks (will be replaced with database)
-tasks = []
+tasks: List[TaskType] = []
 
 
 @bp.route("/", methods=["GET"])
-async def get_tasks():
+async def get_tasks() -> Response:
     """Get all tasks."""
     return jsonify(tasks)
 
 
 @bp.route("/", methods=["POST"])
-async def create_task():
+async def create_task() -> tuple[Response, int]:
     """Create a new task."""
     data = await request.get_json()
 
@@ -40,22 +44,22 @@ async def create_task():
 
 
 @bp.route("/<int:task_id>", methods=["GET"])
-async def get_task(task_id):
+async def get_task(task_id: int) -> tuple[Response, int]:
     """Get a specific task by ID."""
     task = next((t for t in tasks if t["id"] == task_id), None)
     if task is None:
         return jsonify({"error": "Task not found"}), 404
-    return jsonify(task)
+    return jsonify(task), 200
 
 
 @bp.route("/<int:task_id>", methods=["PUT"])
-async def update_task(task_id):
+async def update_task(task_id: int) -> tuple[Response, int]:
     """Update a task."""
-    task = next((t for t in tasks if t["id"] == task_id), None)
+    task: Optional[TaskType] = next((t for t in tasks if t["id"] == task_id), None)
     if task is None:
         return jsonify({"error": "Task not found"}), 404
 
-    data = await request.get_json()
+    data: Dict[str, Any] = await request.get_json()
 
     # Update task fields
     if "title" in data:
@@ -71,13 +75,13 @@ async def update_task(task_id):
         elif data["status"] == "completed" and not task["completed_at"]:
             task["completed_at"] = datetime.now().isoformat()
 
-    return jsonify(task)
+    return jsonify(task), 200
 
 
 @bp.route("/<int:task_id>/start", methods=["POST"])
-async def start_task(task_id):
+async def start_task(task_id: int) -> tuple[Response, int]:
     """Start a task and schedule a check-in."""
-    task = next((t for t in tasks if t["id"] == task_id), None)
+    task: Optional[TaskType] = next((t for t in tasks if t["id"] == task_id), None)
     if task is None:
         return jsonify({"error": "Task not found"}), 404
 
@@ -87,22 +91,20 @@ async def start_task(task_id):
 
     # Schedule check-in (for now, just set a time 30 minutes from now)
     # In a real implementation, this would use a scheduler like APScheduler
-    from datetime import timedelta
-
-    check_in_time = datetime.now() + timedelta(minutes=30)
+    check_in_time: datetime = datetime.now() + timedelta(minutes=30)
     task["check_in_time"] = check_in_time.isoformat()
 
-    return jsonify(task)
+    return jsonify(task), 200
 
 
 @bp.route("/<int:task_id>/complete", methods=["POST"])
-async def complete_task(task_id):
+async def complete_task(task_id: int) -> tuple[Response, int]:
     """Mark a task as completed."""
-    task = next((t for t in tasks if t["id"] == task_id), None)
+    task: Optional[TaskType] = next((t for t in tasks if t["id"] == task_id), None)
     if task is None:
         return jsonify({"error": "Task not found"}), 404
 
     task["status"] = "completed"
     task["completed_at"] = datetime.now().isoformat()
 
-    return jsonify(task)
+    return jsonify(task), 200
