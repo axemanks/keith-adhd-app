@@ -9,6 +9,7 @@
         "checkins",
         "dotenv",
         "hypercorn",
+        "isort",
         "jobstores",
         "jsonify",
         "mypy",
