@@ -4,11 +4,14 @@
     "dictionaryDefinitions": [],
     "dictionaries": [],
     "words": [
+        "apscheduler",
+        "checkin",
         "checkins",
         "dotenv",
         "hypercorn",
         "jobstores",
         "jsonify",
+        "mypy",
         "pyfile"
     ],
     "ignoreWords": [],

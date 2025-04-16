@@ -1,8 +1,8 @@
 import os
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union, cast
 
 from dotenv import load_dotenv
-from quart import Quart, send_from_directory
+from quart import Quart, Response, send_from_directory
 
 # Load environment variables
 load_dotenv()
@@ -15,7 +15,11 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Quart:
     # Default configuration
     app.config.from_mapping(
         SECRET_KEY=os.environ.get("SECRET_KEY", "dev"),
-        DATABASE=os.path.join(app.instance_path, "adhd_assistant.sqlite"),
+        DATABASE=(
+            os.path.join(app.instance_path, "adhd_assistant.sqlite")
+            if app.instance_path
+            else "adhd_assistant.sqlite"
+        ),
     )
 
     if test_config is None:
@@ -27,7 +31,8 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Quart:
 
     # Ensure the instance folder exists
     try:
-        os.makedirs(app.instance_path)
+        if app.instance_path:
+            os.makedirs(app.instance_path)
     except OSError:
         pass
 
@@ -48,19 +53,21 @@ def create_app(test_config: Optional[Dict[str, Any]] = None) -> Quart:
 
     # Serve static files
     @app.route("/assets/<path:filename>")
-    async def serve_static(filename: str) -> Any:
-        return await send_from_directory(os.path.join(app.static_folder, "assets"), filename)
+    async def serve_static(filename: str) -> Response:
+        static_folder = cast(str, app.static_folder)
+        return await send_from_directory(os.path.join(static_folder, "assets"), filename)
 
     # Serve the frontend index.html for all routes except /api
     @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")
-    async def serve_frontend(path: str) -> Union[Tuple[Dict[str, str], int], Any]:
+    async def serve_frontend(path: str) -> Union[Tuple[Dict[str, str], int], Response]:
         # Don't serve frontend for API routes
         if path.startswith("api/"):
             return {"error": "API endpoint not found"}, 404
 
         # Serve the frontend index.html for all other routes
-        return await send_from_directory(app.static_folder, "index.html")
+        static_folder = cast(str, app.static_folder)
+        return await send_from_directory(static_folder, "index.html")
 
     # API routes will be added here
     @app.route("/api/health")
