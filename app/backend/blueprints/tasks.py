@@ -1,3 +1,4 @@
+import uuid
 from typing import Dict, List, Optional, Union, Any
 from quart import Blueprint, Response, request, jsonify
 from datetime import datetime, timedelta
@@ -5,7 +6,7 @@ from datetime import datetime, timedelta
 bp = Blueprint("tasks", __name__, url_prefix="/api/tasks")
 
 # Type definition for a task
-TaskType = Dict[str, Union[int, str, Optional[str]]]
+TaskType = Dict[str, Union[str, Optional[str]]]  # id is now str (UUID)
 
 # In-memory storage for tasks (will be replaced with database)
 tasks: List[TaskType] = []
@@ -28,7 +29,7 @@ async def create_task() -> tuple[Response, int]:
 
     # Create task object
     task = {
-        "id": len(tasks) + 1,
+        "id": str(uuid.uuid4()),
         "title": data["title"],
         "description": data.get("description", ""),
         "estimated_duration": data.get("estimated_duration", 30),  # in minutes
@@ -43,8 +44,8 @@ async def create_task() -> tuple[Response, int]:
     return jsonify(task), 201
 
 
-@bp.route("/<int:task_id>", methods=["GET"])
-async def get_task(task_id: int) -> tuple[Response, int]:
+@bp.route("/<string:task_id>", methods=["GET"])
+async def get_task(task_id: str) -> tuple[Response, int]:
     """Get a specific task by ID."""
     task = next((t for t in tasks if t["id"] == task_id), None)
     if task is None:
