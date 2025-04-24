@@ -1,91 +1,144 @@
-import { useState } from 'react'
-import './App.css'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useEffect, useState } from 'react';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
-  const [activeTab, setActiveTab] = useState('dashboard')
+  // State for lists
+  const [goals, setGoals] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [checkins, setCheckins] = useState([]);
+
+  // State for forms
+  const [goalTitle, setGoalTitle] = useState('');
+  const [taskTitle, setTaskTitle] = useState('');
+  const [checkinTaskId, setCheckinTaskId] = useState('');
+  const [checkinNotes, setCheckinNotes] = useState('');
+
+  // Fetch lists on mount
+  useEffect(() => {
+    fetch('/api/goals/')
+      .then(async r => {
+        console.log('GET /api/goals/ status:', r.status);
+        const data = await r.json().catch(() => null);
+        console.log('GET /api/goals/ data:', data);
+        setGoals((data && data.goals) || []);
+      })
+      .catch(e => console.error('GET /api/goals/ error:', e));
+    fetch('/api/tasks/')
+      .then(async r => {
+        console.log('GET /api/tasks/ status:', r.status);
+        const data = await r.json().catch(() => null);
+        console.log('GET /api/tasks/ data:', data);
+        setTasks(data || []);
+      })
+      .catch(e => console.error('GET /api/tasks/ error:', e));
+    fetch('/api/checkins/')
+      .then(async r => {
+        console.log('GET /api/checkins/ status:', r.status);
+        const data = await r.json().catch(() => null);
+        console.log('GET /api/checkins/ data:', data);
+        setCheckins(data || []);
+      })
+      .catch(e => console.error('GET /api/checkins/ error:', e));
+  }, []);
+
+  // Add goal
+  const handleAddGoal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!goalTitle) return;
+    const res = await fetch('/api/goals/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: goalTitle }),
+    });
+    if (res.ok) {
+      const newGoal = await res.json();
+      setGoals(g => [...g, newGoal]);
+      setGoalTitle('');
+    }
+  };
+
+  // Add task
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!taskTitle) return;
+    const res = await fetch('/api/tasks/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: taskTitle }),
+    });
+    if (res.ok) {
+      const newTask = await res.json();
+      setTasks(t => [...t, newTask]);
+      setTaskTitle('');
+    }
+  };
+
+  // Add check-in
+  const handleAddCheckin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!checkinTaskId) return;
+    const res = await fetch('/api/checkins/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task_id: checkinTaskId, notes: checkinNotes }),
+    });
+    if (res.ok) {
+      const newCheckin = await res.json();
+      setCheckins(c => [...c, newCheckin]);
+      setCheckinTaskId('');
+      setCheckinNotes('');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-8">
-      {/* Header with logos */}
-      <header className="flex justify-center gap-8 mb-8">
-        <a href="https://vite.dev" target="_blank" className="transition-transform hover:scale-110">
-          <img src={viteLogo} className="h-24" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" className="transition-transform hover:scale-110">
-          <img src={reactLogo} className="h-24 animate-spin-slow" alt="React logo" />
-        </a>
-      </header>
-
-      {/* Main content */}
-      <main className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-center text-blue-600 dark:text-blue-400 mb-8">
-          Vite + React + Tailwind CSS
-        </h1>
-
-        {/* Card component */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex justify-center mb-4">
-            <button
-              onClick={() => setCount((count) => count + 1)}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors shadow-md"
-            >
-              Count is {count}
-            </button>
-          </div>
-
-          <p className="text-center text-gray-700 dark:text-gray-300">
-            Edit <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">src/App.tsx</code> and save to test HMR
-          </p>
+      <main className="max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-8">ADHD Goals & Tasks Tracker</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Goals */}
+          <section className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+            <h2 className="text-xl font-semibold mb-2">Goals</h2>
+            <form onSubmit={handleAddGoal} className="mb-2 flex gap-2">
+              <input value={goalTitle} onChange={e => setGoalTitle(e.target.value)} placeholder="New goal title" className="flex-1 px-2 py-1 rounded border" />
+              <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded">Add</button>
+            </form>
+            <ul className="space-y-1 text-sm">
+              {goals.map((g: any) => (
+                <li key={g.id} className="border-b last:border-b-0 py-1">{g.title}</li>
+              ))}
+            </ul>
+          </section>
+          {/* Tasks */}
+          <section className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+            <h2 className="text-xl font-semibold mb-2">Tasks</h2>
+            <form onSubmit={handleAddTask} className="mb-2 flex gap-2">
+              <input value={taskTitle} onChange={e => setTaskTitle(e.target.value)} placeholder="New task title" className="flex-1 px-2 py-1 rounded border" />
+              <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded">Add</button>
+            </form>
+            <ul className="space-y-1 text-sm">
+              {tasks.map((t: any) => (
+                <li key={t.id} className="border-b last:border-b-0 py-1">{t.title}</li>
+              ))}
+            </ul>
+          </section>
+          {/* Check-ins */}
+          <section className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+            <h2 className="text-xl font-semibold mb-2">Check-ins</h2>
+            <form onSubmit={handleAddCheckin} className="mb-2 flex gap-2">
+              <input value={checkinTaskId} onChange={e => setCheckinTaskId(e.target.value)} placeholder="Task ID" className="w-1/2 px-2 py-1 rounded border" />
+              <input value={checkinNotes} onChange={e => setCheckinNotes(e.target.value)} placeholder="Notes" className="flex-1 px-2 py-1 rounded border" />
+              <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded">Add</button>
+            </form>
+            <ul className="space-y-1 text-sm">
+              {checkins.map((c: any) => (
+                <li key={c.id} className="border-b last:border-b-0 py-1">Task {c.task_id}: {c.notes}</li>
+              ))}
+            </ul>
+          </section>
         </div>
-
-        {/* Tabs component */}
-        <div className="mb-8">
-          <div className="flex border-b border-gray-200 dark:border-gray-700">
-            {['dashboard', 'team', 'projects', 'calendar'].map((tab) => (
-              <button
-                key={tab}
-                className={`py-2 px-4 capitalize ${activeTab === tab
-                    ? 'border-b-2 border-blue-500 font-medium text-blue-600 dark:text-blue-400'
-                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                  }`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-          <div className="p-4 bg-white dark:bg-gray-800 rounded-b-xl shadow-lg">
-            <p className="text-gray-600 dark:text-gray-300">
-              You've selected: <span className="font-medium text-blue-600 dark:text-blue-400 capitalize">{activeTab}</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Alert component */}
-        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded mb-8" role="alert">
-          <div className="flex items-center">
-            <svg className="h-5 w-5 mr-2 fill-current" viewBox="0 0 20 20">
-              <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
-            </svg>
-            <p>Tailwind CSS is working correctly!</p>
-          </div>
-        </div>
-
-        {/* Documentation link */}
-        <p className="text-center text-gray-500 dark:text-gray-400">
-          Click on the Vite and React logos to learn more
-        </p>
       </main>
-
-      {/* Footer */}
-      <footer className="mt-16 text-center text-sm text-gray-500 dark:text-gray-400">
-        Built with Tailwind CSS v4.1.4
-      </footer>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
